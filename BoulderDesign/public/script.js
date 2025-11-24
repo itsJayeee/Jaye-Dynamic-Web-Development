@@ -1,0 +1,251 @@
+// --- CONFIGURATION ---
+const GRID_SIZE = 60; // Pixels (matches background-size in CSS)
+const wall = document.getElementById('wall-container');
+let selectedHold = null; // Track which hold is currently clicked
+
+// --- 1. DRAG AND DROP LOGIC ---
+
+// A. Dragging from Palette (Creating New)
+const paletteItems = document.querySelectorAll('.hold-item');
+
+paletteItems.forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+        // Store the type of hold being dragged (e.g., "jug")
+        e.dataTransfer.setData('type', item.dataset.type);
+    });
+});
+
+// B. Dropping onto Wall
+wall.addEventListener('dragover', (e) => {
+    e.preventDefault(); // Allow dropping
+});
+
+wall.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('type');
+    
+    // If "type" exists, it came from the palette. 
+    // If not, we might be moving an existing hold (handled by logic below).
+    if (type) {
+        createHold(type, e.clientX, e.clientY);
+    }
+});
+
+// C. Creating the Hold Element
+function createHold(type, mouseX, mouseY) {
+    // 1. Create Div
+    const hold = document.createElement('div');
+    hold.classList.add('wall-hold');
+    
+    // 2. Add Shape Inner Div (for styling)
+    const shape = document.createElement('div');
+    shape.classList.add('hold-shape', `shape-${type}`);
+    hold.appendChild(shape);
+
+    // 3. Position Logic (Snap to Grid)
+    // We need to account for the wall's offset on the screen
+    const rect = wall.getBoundingClientRect();
+    const rawX = mouseX - rect.left;
+    const rawY = mouseY - rect.top;
+
+    // SNAP MATH: Round to nearest GRID_SIZE
+    const snapX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
+    const snapY = Math.round(rawY / GRID_SIZE) * GRID_SIZE;
+
+    hold.style.left = `${snapX}px`;
+    hold.style.top = `${snapY}px`;
+    
+    // 4. Data Attributes for saving later
+    hold.dataset.type = type;
+    hold.dataset.rotation = 0;
+    hold.dataset.scale = 1;
+    hold.dataset.x = snapX;
+    hold.dataset.y = snapY;
+
+    // 5. Add Click Interaction (Select)
+    hold.addEventListener('mousedown', (e) => {
+        e.stopPropagation(); // Don't trigger wall click
+        selectHold(hold);
+        
+        // Setup Dragging Existing Hold
+        startDraggingExisting(hold, e);
+    });
+
+    wall.appendChild(hold);
+    selectHold(hold);
+}
+
+// --- 2. INTERACTION (Select, Rotate, Scale) ---
+
+const rotInput = document.getElementById('input-rotation');
+const scaleInput = document.getElementById('input-scale');
+const rotVal = document.getElementById('rot-val');
+const scaleVal = document.getElementById('scale-val');
+const btnDelete = document.getElementById('btn-delete-hold');
+
+function selectHold(holdElement) {
+    // 1. Deselect previous
+    if (selectedHold) selectedHold.classList.remove('selected');
+    
+    // 2. Select new
+    selectedHold = holdElement;
+    selectedHold.classList.add('selected');
+
+    // 3. Update Sliders to match this hold's values
+    rotInput.value = selectedHold.dataset.rotation;
+    scaleInput.value = selectedHold.dataset.scale;
+    rotVal.textContent = selectedHold.dataset.rotation;
+    scaleVal.textContent = selectedHold.dataset.scale;
+}
+
+// Update Hold when Sliders Move
+rotInput.addEventListener('input', (e) => {
+    if (!selectedHold) return;
+    const deg = e.target.value;
+    selectedHold.dataset.rotation = deg;
+    rotVal.textContent = deg;
+    applyTransform(selectedHold);
+});
+
+scaleInput.addEventListener('input', (e) => {
+    if (!selectedHold) return;
+    const s = e.target.value;
+    selectedHold.dataset.scale = s;
+    scaleVal.textContent = s;
+    applyTransform(selectedHold);
+});
+
+function applyTransform(el) {
+    el.style.transform = `rotate(${el.dataset.rotation}deg) scale(${el.dataset.scale})`;
+}
+
+// Delete Button
+btnDelete.addEventListener('click', () => {
+    if (selectedHold) {
+        selectedHold.remove();
+        selectedHold = null;
+    }
+});
+
+// Deselect if clicking empty wall
+wall.addEventListener('mousedown', (e) => {
+    if (e.target === wall) {
+        if (selectedHold) selectedHold.classList.remove('selected');
+        selectedHold = null;
+    }
+});
+
+// Logic for moving an existing hold (Simple Drag Implementation)
+function startDraggingExisting(hold, startEvent) {
+    const startX = parseFloat(hold.style.left);
+    const startY = parseFloat(hold.style.top);
+    const mouseStartX = startEvent.clientX;
+    const mouseStartY = startEvent.clientY;
+
+    function onMouseMove(moveEvent) {
+        const dx = moveEvent.clientX - mouseStartX;
+        const dy = moveEvent.clientY - mouseStartY;
+        
+        // Calculate new raw position
+        const newRawX = startX + dx;
+        const newRawY = startY + dy;
+
+        // Snap
+        const snapX = Math.round(newRawX / GRID_SIZE) * GRID_SIZE;
+        const snapY = Math.round(newRawY / GRID_SIZE) * GRID_SIZE;
+
+        hold.style.left = `${snapX}px`;
+        hold.style.top = `${snapY}px`;
+        hold.dataset.x = snapX;
+        hold.dataset.y = snapY;
+    }
+
+    function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+}
+
+
+// --- 3. SAVE & LOAD (AJAX/Fetch) ---
+
+// A. Save Logic
+document.getElementById('btn-save').addEventListener('click', () => {
+    const name = document.getElementById('route-name').value;
+    if (!name) { alert("Please name your route!"); return; }
+
+    // 1. Gather all hold data
+    const allHolds = [];
+    document.querySelectorAll('.wall-hold').forEach(el => {
+        allHolds.push({
+            type: el.dataset.type,
+            x: el.dataset.x,
+            y: el.dataset.y,
+            rotation: el.dataset.rotation,
+            scale: el.dataset.scale
+        });
+    });
+
+    const routeData = {
+        name: name,
+        holds: allHolds
+    };
+
+    // 2. Send POST Request
+    fetch('/api/routes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(routeData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("Design Saved Successfully!");
+        console.log(data);
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+// B. Navigation & Loading Logic
+const btnEditor = document.getElementById('btn-editor');
+const btnGallery = document.getElementById('btn-gallery');
+const viewEditor = document.getElementById('editor-view');
+const viewGallery = document.getElementById('gallery-view');
+
+btnEditor.addEventListener('click', () => {
+    viewEditor.classList.remove('hidden');
+    viewGallery.classList.add('hidden');
+    btnEditor.classList.add('active');
+    btnGallery.classList.remove('active');
+});
+
+btnGallery.addEventListener('click', () => {
+    viewEditor.classList.add('hidden');
+    viewGallery.classList.remove('hidden');
+    btnEditor.classList.remove('active');
+    btnGallery.classList.add('active');
+    loadRoutes(); // Fetch data when opening gallery
+});
+
+function loadRoutes() {
+    fetch('/api/routes')
+    .then(res => res.json())
+    .then(routes => {
+        const grid = document.getElementById('routes-grid');
+        grid.innerHTML = ''; // Clear current
+
+        routes.forEach(route => {
+            const card = document.createElement('div');
+            card.classList.add('route-card');
+            card.innerHTML = `
+                <h3>${route.name}</h3>
+                <p>${route.date}</p>
+                <p>${route.holds.length} Holds</p>
+            `;
+            grid.appendChild(card);
+        });
+    });
+}

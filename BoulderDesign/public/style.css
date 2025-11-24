@@ -1,0 +1,210 @@
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    /* The "Nuclear Option": Apply font to everything explicitly */
+    font-family: 'Amatic SC', cursive; 
+}
+
+body {
+    background-color: #222;
+    color: white;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-weight: 700; 
+    font-size: 1.3rem; 
+}
+
+/* Ensure inputs and buttons inherit the bold weight and color */
+button, input, select, textarea {
+    font-weight: 700;
+    color: white; 
+    background-color: #222; /* Match theme */
+}
+
+/* HEADER */
+header {
+    background: #333;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+}
+
+nav button {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1.5rem;
+    margin-left: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+nav button.active {
+    color: white;
+    border-bottom: 2px solid #00d2ff;
+}
+
+/* MAIN LAYOUT */
+main {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* THE WALL (Grid Background) */
+#wall-container {
+    width: 100%;
+    height: calc(100% - 100px); 
+    background-color: #2a2a2a;
+    position: relative;
+    
+    /* --- GRID DOT SIZE --- */
+    background-image: radial-gradient(#666 3px, transparent 3px); 
+    background-size: 40px 40px; 
+}
+
+/* THE PALETTE */
+#palette {
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    border-top: 1px solid #444;
+    z-index: 100;
+}
+
+.hold-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: grab;
+    transition: transform 0.2s;
+}
+
+.hold-item:hover { transform: scale(1.1); }
+.hold-item span { 
+    font-size: 1.4rem; 
+    margin-top: 5px; 
+    color: #ccc; 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+}
+
+/* CONTROLS PANEL */
+.controls-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 8px;
+    width: 200px;
+    z-index: 100;
+}
+
+.controls-panel h3 { margin-bottom: 10px; font-size: 1.8rem; color: #00d2ff; }
+.controls-panel label { display: block; margin-top: 10px; font-size: 1.4rem; }
+.controls-panel input[type="range"] { width: 100%; }
+.save-section { margin-top: 20px; }
+
+#route-name { 
+    width: 100%; 
+    padding: 5px; 
+    margin-bottom: 10px; 
+    font-size: 1.2rem; 
+    font-weight: bold;
+    color: #333; /* Dark text for input visibility */
+    background-color: #ddd; /* Light background for input */
+}
+
+#btn-save { 
+    width: 100%; 
+    padding: 8px; 
+    background: #00d2ff; 
+    border: none; 
+    cursor: pointer; 
+    font-size: 1.5rem;
+    font-weight: bold; 
+    color: #222;
+}
+.btn-danger { 
+    background: #ff4444; 
+    color: white; 
+    border: none; 
+    width: 100%; 
+    padding: 5px; 
+    margin-top: 10px; 
+    cursor: pointer; 
+    font-size: 1.2rem;
+}
+
+/* --- HOLDER SHAPES --- */
+.hold-shape {
+    width: 60px;
+    height: 60px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Mapping CSS classes to your File Structure 
+   NOTE: Filenames are Case Sensitive on some servers! 
+   I matched them to your screenshot (Capitalized first letter) */
+
+.shape-pocket { background-image: url('Climbholders/Pocket.svg'); }
+.shape-jug    { background-image: url('Climbholders/Jug.svg'); }
+.shape-crimp  { background-image: url('Climbholders/Crimp.svg'); height: 40px; } /* Crimps are usually flatter */
+.shape-pinch  { background-image: url('Climbholders/Pinch.svg'); }
+.shape-sidepull { background-image: url('Climbholders/Sidepull.svg'); }
+.shape-mono   { background-image: url('Climbholders/Mono.svg'); }
+.shape-sloper { background-image: url('Climbholders/Sloper.svg'); width: 70px; } /* Slopers are usually big */
+.shape-foothold   { background-image: url('Climbholders/Foothold.svg');width: 20px; }
+.shape-volume   { background-image: url('Climbholders/Volume.svg'); width: 70px; }
+
+/* THE ACTUAL HOLD ON THE WALL */
+.wall-hold {
+    position: absolute;
+    cursor: grab;
+    transform-origin: center center; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wall-hold.selected .hold-shape {
+    filter: drop-shadow(0 0 5px #00d2ff);
+}
+
+/* GALLERY GRID */
+#routes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.route-card {
+    background: #333;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+.route-card h3 { font-size: 1.8rem; color: #00d2ff; }
+.route-card p { font-size: 1.2rem; }

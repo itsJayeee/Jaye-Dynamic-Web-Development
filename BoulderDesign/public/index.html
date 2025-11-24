@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boulder Route Designer</title>
+    
+    <!-- 1. THIS IS THE CRITICAL PART FOR THE FONT -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <header>
+        <h1>Boulder Designer</h1>
+        <nav>
+            <button id="btn-editor" class="active">Editor</button>
+            <button id="btn-gallery">My Boulder Routes</button>
+        </nav>
+    </header>
+
+    <!-- VIEW 1: THE EDITOR (The Wall) -->
+    <main id="editor-view">
+        
+        <!-- Controls for Scale/Rotation -->
+        <div class="controls-panel">
+            <h3>Hold Properties</h3>
+            <label>Rotation: <span id="rot-val">0</span>°</label>
+            <input type="range" id="input-rotation" min="0" max="360" value="0">
+            
+            <label>Scale: <span id="scale-val">1</span>x</label>
+            <input type="range" id="input-scale" min="0.5" max="3" step="0.1" value="1">
+            
+            <button id="btn-delete-hold" class="btn-danger">Remove Hold</button>
+            <hr>
+            <div class="save-section">
+                <input type="text" id="route-name" placeholder="Route Name...">
+                <button id="btn-save">SAVE DESIGN</button>
+            </div>
+        </div>
+
+        <!-- The Wall (Drop Zone) -->
+        <div id="wall-container">
+            <!-- Holds will be dropped here -->
+        </div>
+
+        <!-- The Palette (Draggables) -->
+        <div id="palette">
+            <!-- ITEM 1: POCKET -->
+            <div class="hold-item" data-type="pocket" draggable="true">
+                <div class="hold-shape shape-pocket"></div>
+                <span>Pocket</span>
+            </div>
+
+            <!-- ITEM 2: JUG -->
+            <div class="hold-item" data-type="jug" draggable="true">
+                <div class="hold-shape shape-jug"></div>
+                <span>Jug</span>
+            </div>
+
+            <!-- ITEM 3: CRIMP -->
+            <div class="hold-item" data-type="crimp" draggable="true">
+                <div class="hold-shape shape-crimp"></div>
+                <span>Crimp</span>
+            </div>
+
+            <!-- ITEM 4: PINCH -->
+            <div class="hold-item" data-type="pinch" draggable="true">
+                <div class="hold-shape shape-pinch"></div>
+                <span>Pinch</span>
+            </div>
+
+            <!-- ITEM 5: SIDEPULL -->
+            <div class="hold-item" data-type="sidepull" draggable="true">
+                <div class="hold-shape shape-sidepull"></div>
+                <span>Sidepull</span>
+            </div>
+
+            <!-- ITEM 6: MONO -->
+            <div class="hold-item" data-type="mono" draggable="true">
+                <div class="hold-shape shape-mono"></div>
+                <span>Mono</span>
+            </div>
+
+            <!-- ITEM 7: SLOPER -->
+            <div class="hold-item" data-type="sloper" draggable="true">
+                <div class="hold-shape shape-sloper"></div>
+                <span>Sloper</span>
+            </div>
+            <!-- ITEM 8: FOOTHOLD -->
+            <div class="hold-item" data-type="foothold" draggable="true">
+                <div class="hold-shape shape-foothold"></div>
+                <span>Foothold</span>
+            </div>
+            <!-- ITEM 9: VOLUME -->
+            <div class="hold-item" data-type="volume" draggable="true">
+                <div class="hold-shape shape-volume"></div>
+                <span>Volume</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: THE GALLERY (My Saved Routes) -->
+    <main id="gallery-view" class="hidden">
+        <h2>My Saved Routes</h2>
+        <div id="routes-grid">
+            <!-- Saved routes will appear here via JS -->
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
