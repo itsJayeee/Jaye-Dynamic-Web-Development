@@ -21,6 +21,13 @@ Share your dream, then discover the next dreams of people who reached it.
 - Deployed to a public server  
 Live demo: http://68.183.135.158:1234/
 
+## Week 4 — Boulder Designer
+Design your boulder routes and save it!
+- Learned using AJAX with fetch and an Express server.
+- Drew in figma.
+<img width="1512" height="820" alt="image" src="https://github.com/user-attachments/assets/9590d041-a670-402b-b35e-f55f28a186d3" />
+
+
 ---
 
 ## Tech Stack
