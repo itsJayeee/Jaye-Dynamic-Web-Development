@@ -25,6 +25,50 @@ Live demo: http://68.183.135.158:1234/
 Design your boulder routes and save it!
 - Learned using AJAX with fetch and an Express server.
 - Drew in figma.
+
+- # Boulder Designer
+
+Design your bouldering routes and save them — a lightweight web app for setting problems on a climbing wall.
+
+> Built with **Node.js + Express** and **fetch (AJAX)**. UI assets were drawn in **Figma**.
+
+---
+
+## ✨ Features
+
+* **Route design**: place holds on a wall canvas, set grade/color, add notes.
+* **Save & load**: simple in-memory persistence by default (easy to swap for a DB).
+* **Responsive UI**: works on desktop and tablet.
+* **AJAX API**: clean endpoints for creating and listing routes.
+
+---
+
+## 📸 Screenshots
+
+<img width="1512" height="820" alt="image" src="https://github.com/user-attachments/assets/9590d041-a670-402b-b35e-f55f28a186d3" />
+<img width="1512" height="982" alt="Climbing wall" src="https://github.com/user-attachments/assets/c86c2c41-b7dc-4c74-9850-c683c6e68305" />
+<img width="1512" height="982" alt="Climbing wall (1)" src="https://github.com/user-attachments/assets/e90b6e1d-4266-4b22-8bb2-d634d44be4d2" />
+
+---
+
+## 🎥 Demo
+
+* Video: [https://youtu.be/xqGcNFVIjVc](https://youtu.be/xqGcNFVIjVc)
+
+---
+
+## 📁 Project Structure
+
+```
+boulder-designer/
+├─ public/              # static assets (css, js, images)
+│  ├─ index.html
+│  ├─ styles.css
+│  └─ app.js            # canvas interactions + fetch calls
+├─ server.js            # Express app + API routes
+├─ routesStore.js       # in-memory store (replaceable)
+└─ package.json
+```
 <img width="1512" height="820" alt="image" src="https://github.com/user-attachments/assets/9590d041-a670-402b-b35e-f55f28a186d3" />
 
 <img width="1512" height="982" alt="Climbing wall" src="https://github.com/user-attachments/assets/c86c2c41-b7dc-4c74-9850-c683c6e68305" />
