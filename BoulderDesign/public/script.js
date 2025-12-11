@@ -1,6 +1,9 @@
 // --- CONFIGURATION ---
 const GRID_SIZE = 60; // Pixels (matches background-size in CSS)
 const wall = document.getElementById('wall-container');
+
+
+
 let selectedHold = null; // Track which hold is currently clicked
 
 // --- 1. DRAG AND DROP LOGIC ---
@@ -172,44 +175,62 @@ function startDraggingExisting(hold, startEvent) {
 
 // --- 3. SAVE & LOAD (AJAX/Fetch) ---
 
-// A. Save Logic
 document.getElementById('btn-save').addEventListener('click', () => {
     const name = document.getElementById('route-name').value;
-    if (!name) { alert("Please name your route!"); return; }
+    if (!name) { console.log("Please name your route!"); return; }
 
-    // 1. Gather all hold data
-    const allHolds = [];
-    document.querySelectorAll('.wall-hold').forEach(el => {
-        allHolds.push({
-            type: el.dataset.type,
-            x: el.dataset.x,
-            y: el.dataset.y,
-            rotation: el.dataset.rotation,
-            scale: el.dataset.scale
+    // 1. deselect current hold to avoid it being highlighted in the screenshot
+    if (selectedHold) selectedHold.classList.remove('selected');
+
+    // 2. use html2canvas to take a screenshot of the wall
+    console.log("Taking screenshot...");
+    const wallElement = document.getElementById('wall-container');
+
+    html2canvas(wallElement, {
+        backgroundColor: "#2a2a2a" // Set background color to match wall
+    }).then(canvas => {
+        // img src
+        const screenshotData = canvas.toDataURL("image/png");
+
+        // 3. collect all holds data
+        const allHolds = [];
+        document.querySelectorAll('.wall-hold').forEach(el => {
+            allHolds.push({
+                type: el.dataset.type,
+                x: el.dataset.x,
+                y: el.dataset.y,
+                rotation: el.dataset.rotation,
+                scale: el.dataset.scale
+            });
         });
+
+        const routeData = {
+            name: name,
+            holds: allHolds,
+            image: screenshotData // send the screenshot to the server
+        };
+
+        // 4. Send to Server
+        fetch('/api/routes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(routeData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Saved:", data);
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "SAVED!";
+            setTimeout(() => btn.innerText = "SAVE DESIGN", 2000);
+            
+            // select the first hold again (if exists)
+            if (selectedHold) selectedHold.classList.add('selected');
+        })
+        .catch(error => console.error('Error:', error));
     });
-
-    const routeData = {
-        name: name,
-        holds: allHolds
-    };
-
-    // 2. Send POST Request
-    fetch('/api/routes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(routeData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert("Design Saved Successfully!");
-        console.log(data);
-    })
-    .catch(error => console.error('Error:', error));
 });
 
-
-// B. Navigation & Loading Logic
+// View Switching
 const btnEditor = document.getElementById('btn-editor');
 const btnGallery = document.getElementById('btn-gallery');
 const viewEditor = document.getElementById('editor-view');
@@ -227,25 +248,65 @@ btnGallery.addEventListener('click', () => {
     viewGallery.classList.remove('hidden');
     btnEditor.classList.remove('active');
     btnGallery.classList.add('active');
-    loadRoutes(); // Fetch data when opening gallery
+    loadRoutes(); 
 });
 
+// --- UPDATED LOAD FUNCTION ---
 function loadRoutes() {
+    const grid = document.getElementById('routes-grid');
+    grid.innerHTML = 'Loading...'; 
+
     fetch('/api/routes')
     .then(res => res.json())
     .then(routes => {
-        const grid = document.getElementById('routes-grid');
-        grid.innerHTML = ''; // Clear current
+        grid.innerHTML = ''; 
+
+        if(routes.length === 0) {
+            grid.innerHTML = '<p>No saved routes yet.</p>';
+            return;
+        }
 
         routes.forEach(route => {
             const card = document.createElement('div');
             card.classList.add('route-card');
-            card.innerHTML = `
-                <h3>${route.name}</h3>
-                <p>${route.date}</p>
-                <p>${route.holds.length} Holds</p>
-            `;
+            
+            // 1. if there's an image, show it
+            if (route.image) {
+                const img = document.createElement('img');
+                img.src = route.image;
+                img.classList.add('route-thumbnail');
+                card.appendChild(img);
+            }
+
+            // 2. Name & Info
+            const title = document.createElement('h3');
+            title.textContent = route.name;
+            
+            const info = document.createElement('p');
+            info.textContent = `${route.date} | ${route.holds.length} Holds`;
+
+            // 3. Delete Button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'DELETE';
+            deleteBtn.classList.add('btn-delete-card');
+            deleteBtn.addEventListener('click', () => {
+                deleteRoute(route.id);
+            });
+
+            card.appendChild(title);
+            card.appendChild(info);
+            card.appendChild(deleteBtn);
+            
             grid.appendChild(card);
         });
     });
+}
+
+function deleteRoute(id) {
+    fetch(`/api/routes/${id}`, { method: 'DELETE' })
+    .then(res => res.json())
+    .then(data => {
+        loadRoutes(); 
+    })
+    .catch(err => console.error('Error deleting:', err));
 }

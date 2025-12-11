@@ -1,35 +1,53 @@
+// server.js
 const express = require('express');
-const app = express();
-const port = 3000;
+const path = require('path');
 
-// Middleware to handle JSON data
-app.use(express.json());
+const app = express();
+app.use(express.json({ limit: '20mb' })); // 为了接收缩略图
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(express.static('public'));
 
-// 1. SIMPLE STORAGE (In-Memory Array)
-// This variable lives on the server. If you restart the server, it resets.
 let savedRoutes = [];
+let nextId = 1;
 
-// 2. GET REQUEST: Fetch all saved routes
-app.get('/api/routes', (req, res) => {
-    console.log('Client asked for routes. Sending:', savedRoutes.length);
-    res.json(savedRoutes);
-});
-
-// 3. POST REQUEST: Save a new route
+// 保存设计
 app.post('/api/routes', (req, res) => {
-    const newRoute = req.body;
-    
-    // Add a simple ID and timestamp
-    newRoute.id = Date.now();
-    newRoute.date = new Date().toLocaleDateString();
-
-    savedRoutes.push(newRoute);
-    
-    console.log('New route saved:', newRoute.name);
-    res.json({ status: 'success', message: 'Route saved!' });
+  const { name, html, thumbnail } = req.body;
+  if (!name || !html || !thumbnail) {
+    return res.status(400).json({ error: 'name / html / thumbnail are required' });
+  }
+  const route = {
+    id: nextId++,
+    name,
+    html,        // 用于恢复
+    thumbnail,   // dataURL，展示缩略图
+    createdAt: Date.now()
+  };
+  savedRoutes.unshift(route); // 新的在前
+  console.log('New route saved:', route.name);
+  res.json({ ok: true, id: route.id });
 });
 
-app.listen(port, () => {
-    console.log(`Boulder App listening at http://localhost:${port}`);
+// 列出所有（给 gallery）
+app.get('/api/routes', (_req, res) => {
+  // 列表只需要轻量字段
+  const list = savedRoutes.map(({ id, name, thumbnail, createdAt }) => ({
+    id, name, thumbnail, createdAt
+  }));
+  res.json(list);
+});
+
+// 取单个（用于恢复）
+app.get('/api/routes/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const item = savedRoutes.find(r => r.id === id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  res.json(item);
+});
+
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

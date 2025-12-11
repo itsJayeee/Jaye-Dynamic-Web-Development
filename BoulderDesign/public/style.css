@@ -208,3 +208,24 @@ main {
 }
 .route-card h3 { font-size: 1.8rem; color: #00d2ff; }
 .route-card p { font-size: 1.2rem; }
+
+
+.route-thumbnail {
+    width: 100%;
+    height: 150px;
+    object-fit: cover; /* 保持图片比例，裁剪多余部分 */
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: #222;
+    border: 1px solid #555;
+}
+
+/* --- img --- */
+.route-card h3 { font-size: 1.8rem; color: #00d2ff; }
+.route-card p { font-size: 1.2rem; color: #aaa; margin-bottom: 10px; }
+.btn-delete-card {
+    background-color: #222; border: 1px solid #ff4444; color: #ff4444;
+    padding: 5px 15px; border-radius: 4px; cursor: pointer;
+    font-size: 1rem; transition: all 0.2s;
+}
+.btn-delete-card:hover { background-color: #ff4444; color: white; }
