@@ -69,15 +69,3 @@ boulder-designer/
 
 ---
 
-## Tech Stack
-- Node.js, Express
-- EJS templating
-- Deployment: DigitalOcean, Cyberduck
-
-## Repository Structure
-- Week 1: Static site + server notes
-- Week 2: Compliment Machine
-- Week 3: Dream Machine
-
-## Notes
-This repo will evolve weekly with new features, code, and reflections.
